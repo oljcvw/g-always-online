@@ -1,0 +1,43 @@
+name: Build Linux Binary
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: grindr-always-online
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-musl
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake nasm clang libclang-dev
+
+      - name: Install Zig
+        uses: mlugg/setup-zig@v1
+
+      - name: Install cargo-zigbuild
+        run: cargo install --locked cargo-zigbuild
+
+      - name: Set boringssl/zig cross-build workaround
+        run: |
+          HOST_TRIPLE="$(rustc -vV | awk '/^host:/{print $2}')"
+          echo "CMAKE_TOOLCHAIN_FILE_${HOST_TRIPLE//-/_}=1" >> "$GITHUB_ENV"
+
+      - name: Build Linux arm64 (static, musl)
+        run: cargo zigbuild --release --target aarch64-unknown-linux-musl
+
+      - name: Upload arm64 artifact
+        uses: actions/upload-artifact@v7
+        with:
+          path: "target/aarch64-unknown-linux-musl/release/${{ env.APP_NAME }}"
+          archive: false
+          retention-days: 7

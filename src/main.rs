@@ -11,7 +11,7 @@ use grindr::{DeviceInfo, GrindrClient, Method, Session};
 const MIN_INTERVAL: Duration = Duration::from_secs(2 * 60);
 const MAX_INTERVAL: Duration = Duration::from_secs(9 * 60 + 59);
 
-const JIGGLE_METERS: f64 = 5.0;
+const JIGGLE_METERS: f64 = 1200.0;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
